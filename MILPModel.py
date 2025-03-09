@@ -199,19 +199,23 @@ class MILPModel():
             # Create a figure and axis
             fig, ax = plt.subplots(figsize=(10, 6))
 
-            available_time_plotted = []
+            available_time_plotted = {}
+            y_offset = (ax.get_ylim()[1] - ax.get_ylim()[0]) * 0.4
+            repeat = (ax.get_ylim()[1] - ax.get_ylim()[0]) * 0.03
             # Plot each task for each robot with different colors
             for r, t, start, end in tasks_data:
+                if r not in available_time_plotted:
+                    available_time_plotted[r] = []
                 ax.barh(r, end - start, left=start, label=f'Task {t}', color=colors(t))
                 # Mark where each task starts to be available
                 ax.plot([tasks[t].available_time, tasks[t].available_time], [r - 0.4, r + 0.4], color='red', linestyle='--')
                 # Annotate the task with its available time
-                if tasks[t].available_time not in available_time_plotted:
-                    ax.text(tasks[t].available_time, r+0.45, f'Task {t}', ha='center', va='top', color='black', fontsize=9)
+                if tasks[t].available_time not in available_time_plotted[r]:
+                    ax.text(tasks[t].available_time, r + y_offset, f'Task {t}', ha='center', va='bottom', color='black', fontsize=9)
                 else:
-                    offset = available_time_plotted.count(tasks[t].available_time)
-                    ax.text(tasks[t].available_time, r+0.45+0.1*offset, f'Task {t}', ha='center', va='top', color='black', fontsize=9)
-                available_time_plotted.append(tasks[t].available_time)
+                    offset = available_time_plotted[r].count(tasks[t].available_time)
+                    ax.text(tasks[t].available_time, r + y_offset + repeat * offset, f'Task {t}', ha='center', va='bottom', color='black', fontsize=9)
+                available_time_plotted[r].append(tasks[t].available_time)
 
             # Print total delay on the plot
             ax.text(0.5, -0.1, f'Total Delay: {total_delay} s', ha='center', va='top', transform=ax.transAxes, fontsize=12, color='blue')
@@ -232,7 +236,8 @@ class MILPModel():
 
             # Adjust margin
             ax.use_sticky_edges = False
-            ax.set_xmargin(0.1)
+            ax.set_xmargin(0.15)
+            ax.set_ymargin(0.15)
 
             # Show the plot
             plt.show()
