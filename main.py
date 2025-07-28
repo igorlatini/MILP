@@ -1,74 +1,93 @@
 from MILPModel import MILPModel
 
 #Number of robots and tasks
-number_of_robots = 3
-number_of_tasks = 7
+number_of_robots = 2
+number_of_tasks = 16
 
 model = MILPModel(number_of_robots, number_of_tasks)
 
 #Setup -----------------------------------
 
 #Robots
-model.get_robot(1).set_start_position(2,0)
-model.get_robot(2).set_start_position(4,0)
-model.get_robot(3).set_start_position(6,0)
-model.get_robot(3).set_navigation('AGV')
-model.get_robot(3).set_route(1)
+model.get_robot(1).set_start_position(0.6,6.38)
+model.get_robot(2).set_start_position(18.43,7.26)
+
+
+for i in range(16):
+    model.get_task(i+1).set_start_position(0, 5.15)
+    model.get_task(i+1).set_end_position(0, 0)
 
 #Task 1
-model.get_task(1).set_available_time(100)
-model.get_task(1).set_duration(100)
-model.get_task(1).set_start_position(1, 5)
-model.get_task(1).set_end_position(1, 20)
-model.get_task(1).set_force_robot(2)
+model.get_task(1).set_available_time(400)
+model.get_task(1).set_duration(201.49)
 
 #Task 2
-model.get_task(2).set_available_time(200)
-model.get_task(2).set_duration(200)
-model.get_task(2).set_start_position(3, 5)
-model.get_task(2).set_end_position(3, 20)
+model.get_task(2).set_available_time(800)
+model.get_task(2).set_duration(216.18)
 
 #Task 3
-model.get_task(3).set_available_time(300)
-model.get_task(3).set_duration(200)
-model.get_task(3).set_start_position(5, 5)
-model.get_task(3).set_end_position(5, 20)
-model.get_task(3).add_restrict_robot(1)
+model.get_task(3).set_available_time(1200)
+model.get_task(3).set_duration(235.66)
 
 #Task 4
-model.get_task(4).set_available_time(300)
-model.get_task(4).set_duration(100)
-model.get_task(4).set_start_position(7, 5)
-model.get_task(4).set_end_position(7, 20)
-model.get_task(4).add_precedent(3)
-model.get_task(4).add_navigation_constraint(1)
-model.get_task(4).set_force_robot(2)
+model.get_task(4).set_available_time(1600)
+model.get_task(4).set_duration(288.46)
 
 #Task 5
-model.get_task(5).set_available_time(600)
-model.get_task(5).set_duration(50)
-model.get_task(5).set_start_position(7, 25)
-model.get_task(5).set_end_position(7, 30)
-model.get_task(5).add_navigation_constraint(1)
-model.get_task(5).add_restrict_robot(1)
+model.get_task(5).set_available_time(2000)
+model.get_task(5).set_duration(306.72)
 
 #Task 6
-model.get_task(6).set_available_time(800)
-model.get_task(6).set_duration(400)
-model.get_task(6).set_start_position(1, 40)
-model.get_task(6).set_end_position(10, 40)
-model.get_task(6).add_navigation_constraint(1)
-model.get_task(6).set_number_of_robots(2)
+model.get_task(6).set_available_time(2400)
+model.get_task(6).set_duration(329.2)
 
 #Task 7
-model.get_task(7).set_available_time(900)
-model.get_task(7).set_duration(600)
-model.get_task(7).set_start_position(12, 40)
-model.get_task(7).set_end_position(12, 5)
-model.get_task(7).add_navigation_constraint(1)
+model.get_task(7).set_available_time(800)
+model.get_task(7).set_duration(201.49)
+
+#Task 8
+model.get_task(8).set_available_time(1600)
+model.get_task(8).set_duration(216.18)
+
+#Task 9
+model.get_task(9).set_available_time(2400)
+model.get_task(9).set_duration(235.66)
+
+#Task 10
+model.get_task(10).set_available_time(3200)
+model.get_task(10).set_duration(288.46)
+
+#Task 11
+model.get_task(11).set_available_time(4000)
+model.get_task(11).set_duration(306.72)
+
+#Task 12
+model.get_task(12).set_available_time(4800)
+model.get_task(12).set_duration(329.2)
+
+#Task 13
+model.get_task(13).set_available_time(2800)
+model.get_task(13).set_duration(347.38)
+
+#Task 14
+model.get_task(14).set_available_time(3200)
+model.get_task(14).set_duration(369.64)
+
+#Task 15
+model.get_task(15).set_available_time(5600)
+model.get_task(15).set_duration(347.38)
+
+#Task 16
+model.get_task(16).set_available_time(6400)
+model.get_task(16).set_duration(369.64)
+
 
 model.run()
 
 print(f'Total time: {model.total_time}')
 print(f'Total delay: {model.total_delay}')
 print(model.results)
+
+print('----------------')
+print(f'Total variables: {len(model.variables)}')
+print(f'Total constraints: {len(model.constraints)}')

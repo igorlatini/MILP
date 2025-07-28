@@ -13,10 +13,10 @@ class MILPModel():
     def __init__(self, n_robots, n_tasks):
 
         if n_robots < 1:
-            raise ValueError("Must haveat least one robot")
+            raise ValueError("Must have at least one robot")
         
         if n_tasks < 1:
-            raise ValueError("Must haveat least one task")
+            raise ValueError("Must have at least one task")
 
         self.R = range(1, n_robots + 1)  # Set of robots
         self.T = range(1, n_tasks + 1)   # Set of tasks
@@ -41,6 +41,8 @@ class MILPModel():
         self.results = ''
         self.total_delay = 0
 
+        self.variables = None
+        self.constraints = None
 
     def get_robot(self, n: int) -> Robot:
         return self.robots[n]
@@ -105,21 +107,21 @@ class MILPModel():
 
         # 6 - A task can only be started by a robot after the previous one is completed by that robot (including travel time) - Tasks cannot overlap
         for s in S:
-            if s > 1:
-                for s2 in range(s):
-                    if s2 > 0:
-                        for r in R:
-                            for t1 in T:
-                                for t2 in T:
-                                    if t1 in tasks[t2].tasks_distance:
-                                        prob += init_time[s][r][t1] >= end_time[s2][r][t2] + utils.travel_time_distance(tasks[t2].tasks_distance[t1], robots[r].speed) - M * (1 - allocation[s2][r][t2])
-                                    else:
-                                        prob += init_time[s][r][t1] >= end_time[s2][r][t2] + utils.travel_time_position(tasks[t2].end_position, tasks[t1].start_position, robots[r].speed) - M * (1 - allocation[s2][r][t2])
-            else:
-                for r in R:
-                    for t in T:
-                            prob += init_time[1][r][t] >= utils.travel_time_position(robots[r].start_position, tasks[t].start_position, robots[r].speed) - M * (1 - allocation[1][r][t])
-
+            for s2 in range(s):
+                if s2 > 0:
+                    for r in R:
+                        for t1 in T:
+                            for t2 in T:
+                                if t1 in tasks[t2].tasks_distance:
+                                    prob += init_time[s][r][t1] >= end_time[s2][r][t2] + utils.travel_time_distance(tasks[t2].tasks_distance[t1], robots[r].speed) - M * (1 - allocation[s2][r][t2])
+                                else:
+                                    prob += init_time[s][r][t1] >= end_time[s2][r][t2] + utils.travel_time_position(tasks[t2].end_position, tasks[t1].start_position, robots[r].speed) - M * (1 - allocation[s2][r][t2])
+        for s in S:
+            for r in R:
+                for t in T:
+                    previous_allocs = pulp.lpSum([allocation[s2][r][tp] for s2 in range(s) if s2 > 0 for tp in T])
+                    prob += init_time[s][r][t] >= utils.travel_time_position(robots[r].start_position, tasks[t].start_position, robots[r].speed) - M * previous_allocs
+                    
         # 7 - Precedence constraints
         for s1, s2, r1, r2, t1 in product(S, S, R, R, T):
             for t2 in tasks[t1].precedents:
@@ -184,6 +186,9 @@ class MILPModel():
         self.total_delay = total_delay
         #print(f"Total delay: {total_delay}")
 
+        self.variables = prob.variables()
+        self.constraints = prob.constraints
+
         # Plotting - Timeline ------------------------------------------------------------------------------
         if generate_graphics:
             tasks_data = []
@@ -201,7 +206,7 @@ class MILPModel():
 
             available_time_plotted = {}
             y_offset = (ax.get_ylim()[1] - ax.get_ylim()[0]) * 0.4
-            repeat = (ax.get_ylim()[1] - ax.get_ylim()[0]) * 0.03
+            repeat = (ax.get_ylim()[1] - ax.get_ylim()[0]) * 0.08 #0.03
             # Plot each task for each robot with different colors
             for r, t, start, end in tasks_data:
                 if r not in available_time_plotted:
